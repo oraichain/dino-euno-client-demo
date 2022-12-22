@@ -1,0 +1,12 @@
+.dino-backets .dino-buckets-title {
+  margin-top: 20px;
+}
+.dino-buckets tbody tr td {
+  cursor: pointer;
+}
+.dino-buckets thead > tr > th {
+  background: #f0f0f0 !important;
+}
+:where(.css-dev-only-do-not-override-9ntgx0).ant-table-wrapper .ant-table {
+  overflow-x: auto;
+}

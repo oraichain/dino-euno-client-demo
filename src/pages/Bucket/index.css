@@ -1,0 +1,22 @@
+.dino-bucket-detail {
+  margin-top: 20px;
+}
+.dino-bucket-page {
+  margin-top: 30px;
+}
+.dino-bucket-page tbody tr td {
+  cursor: pointer;
+}
+.dino-bucket-page thead > tr > th {
+  background: #f0f0f0 !important;
+}
+:where(.css-dev-only-do-not-override-9ntgx0).ant-breadcrumb a:hover {
+  background: transparent;
+  color: #333;
+}
+:where(.css-dev-only-do-not-override-9ntgx0).ant-btn-primary {
+  background: rgb(141, 61, 216) !important;
+}
+:where(.css-dev-only-do-not-override-9ntgx0).ant-table-wrapper .ant-table {
+  overflow-x: auto;
+}

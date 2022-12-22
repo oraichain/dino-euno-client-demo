@@ -1,0 +1,41 @@
+.dino-login {
+  height: calc(100vh - 70px);
+  margin-top: 70px;
+  position: relative;
+  overflow: hidden;
+}
+
+.dino-login > img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.dino-login .dino-login-banner {
+  position: absolute;
+  height: 40%;
+  width: 36%;
+  min-width: 320px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: hsla(0, 0%, 100%, 0.4);
+  backdrop-filter: blur(25px);
+  border-radius: 20px;
+  border: 1px solid;
+  color: #0e2486;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.dino-login-banner-text {
+  font-size: 35px;
+  margin: 10px 0;
+}
+
+.dino-login-banner-text span {
+  font-weight: 700;
+}
