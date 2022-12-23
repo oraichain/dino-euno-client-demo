@@ -1,6 +1,5 @@
 .dino-login {
   height: calc(100vh - 70px);
-  margin-top: 70px;
   position: relative;
   overflow: hidden;
 }
