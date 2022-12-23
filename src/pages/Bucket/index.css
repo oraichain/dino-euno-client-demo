@@ -10,13 +10,17 @@
 .dino-bucket-page thead > tr > th {
   background: #f0f0f0 !important;
 }
-:where(.css-dev-only-do-not-override-9ntgx0).ant-breadcrumb a:hover {
-  background: transparent;
-  color: #333;
+.ant-breadcrumb a:hover {
+  background: transparent !important;
+  color: #333 !important;
 }
-:where(.css-dev-only-do-not-override-9ntgx0).ant-btn-primary {
+.ant-btn-primary {
   background: rgb(141, 61, 216) !important;
 }
-:where(.css-dev-only-do-not-override-9ntgx0).ant-table-wrapper .ant-table {
+.ant-table-wrapper .ant-table {
   overflow-x: auto;
+}
+.ant-btn-default:not(:disabled):hover {
+  color: rgb(141, 61, 216) !important;
+  border-color: rgb(141, 61, 216) !important;
 }
