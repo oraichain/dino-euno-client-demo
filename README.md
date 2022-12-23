@@ -1,6 +1,5 @@
 # Getting Started
 
-Clone project: [dino-euno-client-demo](git@github.com:oraichain/dino-euno-client-demo.git).
 Create file .env then add "REACT_APP_PUBLIC_KEY" (Copy public_key on Eueno Account).
 
 ## Available Scripts
