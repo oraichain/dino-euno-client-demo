@@ -34,7 +34,7 @@ export const AuthorizationProvider: React.FC<{
     <AuthorizationContext.Provider
       value={{
         user,
-        isLoggedIn,
+        isLoggedIn: isLoggedIn && user,
         fetchUser: getUser,
       }}
     >

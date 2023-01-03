@@ -93,27 +93,43 @@ export const getMasterKey = async (key) => {
   return [masterKey, result.iv];
 };
 
-export const uploadKey = async (
-  key,
-  iv,
-  projectId,
-  fileId,
-  token,
-  publicKey,
-  myPublicKey
-) => {
+export const getEncryptedKey = async (publicKey, myPublicKey, key, iv) => {
+  const exported = await window.crypto.subtle.exportKey("raw", key);
+  const data = {
+    iv: typeof iv === "string" ? iv : Buffer.from(iv).toString("hex"),
+    key: Buffer.from(exported).toString("hex"),
+  };
+  if (!publicKey) publicKey = myPublicKey;
+  console.log("Share from \n" + myPublicKey + "\n to \n" + publicKey);
+  const selfEncrypted = await eccrypto.encrypt(
+    Buffer.from(`${publicKey}`, "hex"),
+    Buffer.from(JSON.stringify(data), "utf-8")
+  );
+  const encryptedKey = `${selfEncrypted.ciphertext.toString(
+    "hex"
+  )}@@${selfEncrypted.ephemPublicKey.toString(
+    "hex"
+  )}@@${selfEncrypted.iv.toString("hex")}@@${selfEncrypted.mac.toString(
+    "hex"
+  )}`;
+
+  return encryptedKey;
+};
+
+export const encryptKey = async (key, iv, publicKey) => {
   try {
     const exported = await window.crypto.subtle.exportKey("raw", key);
+
     const data = {
       iv: typeof iv === "string" ? iv : Buffer.from(iv).toString("hex"),
       key: Buffer.from(exported).toString("hex"),
     };
-    if (!publicKey) publicKey = myPublicKey;
-    console.log("Share from \n" + myPublicKey + "\n to \n" + publicKey);
+
     const selfEncrypted = await eccrypto.encrypt(
       Buffer.from(`${publicKey}`, "hex"),
       Buffer.from(JSON.stringify(data), "utf-8")
     );
+
     const encryptedKey = `${selfEncrypted.ciphertext.toString(
       "hex"
     )}@@${selfEncrypted.ephemPublicKey.toString(
@@ -121,39 +137,46 @@ export const uploadKey = async (
     )}@@${selfEncrypted.iv.toString("hex")}@@${selfEncrypted.mac.toString(
       "hex"
     )}`;
-    // let symetricKey;
-    // if (share) {
-    const symetricKey = {
-      project_id: projectId,
-      file_id: fileId,
-      encrypt_key: encryptedKey,
-      share_to: convertPublicToAddress(publicKey),
-    };
-    //   };
-    // } else {
-    //   symetricKey = {
-    //     project_id: projectId,
-    //     file_id: fileId,
-    //     encrypt_key: encryptedKey,
-    //   };
-    // }
 
-    const res = await fetch(
-      `https://developers.eueno.io/api/v1/project-file/encrypt/upload-key-encrypt`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(symetricKey),
-      }
-    );
-    const result = await res.json();
-    return result;
+    return encryptedKey;
   } catch (error) {
     console.log(error);
-    alert(error);
-    return false;
   }
+};
+
+export const keyGen = async () => {
+  const key = await window.crypto.subtle.generateKey(
+    {
+      name: "AES-GCM",
+      length: 256,
+    },
+    true,
+    ["encrypt", "decrypt"]
+  );
+  const readKey = await window.crypto.subtle.exportKey("jwk", key);
+  return {
+    key,
+    keyReadString: readKey.k,
+  };
+};
+
+export const getKeyData = async (publicKey, key, iv) => {
+  const keyData = await encryptKey(key, iv, publicKey);
+
+  return keyData;
+};
+
+export const encryptFile = async (file, iv, key) => {
+  const blob = new Blob([file]);
+  const arrayBuffer = await blob.arrayBuffer();
+  const encryptedData = await window.crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv,
+    },
+    key,
+    arrayBuffer
+  );
+
+  return encryptedData;
 };

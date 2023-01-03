@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { notification, Table } from 'antd';
+import { notification, Popconfirm, Table } from 'antd';
 import Container from '../../components/Container';
 import useToken from '../../hooks/useToken';
 import './index.css';
@@ -7,11 +7,15 @@ import { centerTextEllipsis } from '../../utils';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 import { FiCopy } from 'react-icons/fi';
+import CreateBucket from './CreateBucket';
+import { AiFillDelete } from 'react-icons/ai';
+import { deleteBucket } from '../../services';
 
 const MyBuckets: React.FC = () => {
   const { token } = useToken();
   const navigate = useNavigate();
   const [list, setList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const getListBuckets = useCallback(async () => {
     const response = await fetch(`https://developers.eueno.io/api/v1/project/lists`, {
@@ -25,9 +29,18 @@ const MyBuckets: React.FC = () => {
     setList(data?.items || []);
   }, [token]);
 
+  const handleDelete = useCallback(async (bucketId: string) => {
+    if (!bucketId) return;
+    const response = await deleteBucket(token, bucketId);
+    if (response?.status === 200) {
+      notification.success({ message: 'Delete bucket successfully!' });
+      setRefresh(!refresh);
+    }
+  }, [refresh, token]);
+
   useEffect(() => {
     if (token) getListBuckets();
-  }, [token]);
+  }, [token, refresh]);
 
   const copyValue = (val: any) => {
     navigator.clipboard.writeText(val);
@@ -71,6 +84,18 @@ const MyBuckets: React.FC = () => {
       key: 'createAt',
       render: (text: any) => <div>{moment(text).format('ll')}</div>
     },
+    {
+      title: 'DELETE',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (text: any, record: any) => (
+        <div onClick={(e) => { e.stopPropagation(); }}>
+          <Popconfirm onConfirm={(e) => handleDelete(record?._id)} title="Are you sure?" okText="Yes" cancelText="No">
+            <div style={{ cursor: 'pointer', fontSize: '22px', color: '#e27a7a', height: '26px' }}><AiFillDelete /></div>
+          </Popconfirm>
+        </div>
+      )
+    },
   ];
 
   return (
@@ -79,6 +104,7 @@ const MyBuckets: React.FC = () => {
         <div className='dino-buckets'>
           <h3 className='dino-buckets-title'>My Buckets</h3>
           <div>
+            <CreateBucket reLoad={() => setRefresh(!refresh)} />
             <Table onRow={(record) => { return { onClick: () => {navigate(`/${record?._id}`)} } }} dataSource={list} columns={columns} />
           </div>
         </div>

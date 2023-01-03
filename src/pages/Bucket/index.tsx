@@ -2,68 +2,67 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Container from "../../components/Container";
 import useToken from "../../hooks/useToken";
-import { notification, Table, Breadcrumb } from 'antd';
+import { Table, Breadcrumb, Popconfirm, notification } from 'antd';
 import moment from "moment";
-import { FaShareAltSquare } from 'react-icons/fa';
+import { FaShareAltSquare } from 'react-icons/fa'; 
+import { AiFillDelete } from 'react-icons/ai'; 
+import { GrServices } from 'react-icons/gr'; 
 import './index.css';
-import ShareFile from "./ShareFile";
+import ShareFileDINO from "./ShareFileDINO";
+import Upload from './Upload';
+import { deleteFile, getBucketWithId, getListFilesMethod, getListFileWithFolderMethod } from "../../services";
+import ShareFileEueno from "./ShareFileEueno";
+import { isFileImage } from "../../utils";
 
 
 const Bucket = () => {
   const { token } = useToken();
-  const { bucketId } = useParams();
+  const { bucketId }: any = useParams();
   const navigate = useNavigate();
   const [bucket, setBucket]: any = useState({});
   const [listFile, setListFile] = useState([]);
-  const [folderId, setFolderId] = useState();
+  const [folderId, setFolderId]: any = useState();
   const [refresh, setRefresh] = useState(false);
-  const [infoFile, setInfoFile] = useState();
+  const [refreshFileWithFolder, setRefreshFileWithFolder] = useState(false);
+  const [infoFileDINO, setInfoFileDINO] = useState();
+  const [infoFileEueno, setInfoFileEueno] = useState();
   const [breadcrumb, setBreadcurumb]: any = useState([]);
 
   const getBucket = useCallback(async () => {
-    const response = await fetch(`https://developers.eueno.io/api/v1/project/${bucketId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const data = await response.json();
+    const data = await getBucketWithId(token, bucketId);
     setBucket(data?.item || {});
   }, [token, bucketId]);
 
   const getListFiles = useCallback(async () => {
-    const response = await fetch(`https://developers.eueno.io/api/v2/project-file/file/lists`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ project_id: bucketId })
-    });
-    const { data } = await response.json();
+    const { data } = await getListFilesMethod(token, bucketId);
     setListFile(data?.items || []);
+    setFolderId(data?.root_folder?._id);
   }, [token, bucketId]);
 
   const getListFileWithFolder = useCallback(async () => {
-    const response = await fetch(`https://developers.eueno.io/api/v2/project-file/file/lists`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ project_id: bucketId, folder_parent_id: folderId })
-    });
-    const { data } = await response.json();
+    const { data } = await getListFileWithFolderMethod(token, bucketId, folderId);
     setListFile(data?.items || []);
-    if (!breadcrumb.find((item: any) => item?._id === data?.root_folder?._id)) {
-      setBreadcurumb([...breadcrumb, data?.root_folder]);
-    }
-    const num = breadcrumb.length - (data?.root_folder?.dir?.split('/').length - 1);
-    if (num >= 1) {
-      setBreadcurumb(breadcrumb.slice(0, -num));
+    //breadcrumb
+    if (data?.root_folder?.file_name !== '/') {
+      if (!breadcrumb.find((item: any) => item?._id === data?.root_folder?._id)) {
+        setBreadcurumb([...breadcrumb, data?.root_folder]);
+       }
+       const num = breadcrumb.length - (data?.root_folder?.dir?.split('/').length - 1);
+       if (num >= 1) {
+         setBreadcurumb(breadcrumb.slice(0, -num));
+       }
     }
   }, [token, bucketId, folderId, breadcrumb]);
+
+  const handleDelete = useCallback(async (kind: string, id: string) => {
+    if (!kind && !id) return;
+
+    const data = await deleteFile(kind, id, token, bucketId);
+    if (data?.msg === 'success') {
+      notification.success({ message: "Delete successfully!" });
+      breadcrumb.length > 0 ? setRefreshFileWithFolder(!refreshFileWithFolder) : setRefresh(!refresh);
+    }
+  }, [bucketId, token, refreshFileWithFolder, breadcrumb, refresh]);
 
   useEffect(() => {
     if (token && bucketId) {
@@ -76,7 +75,8 @@ const Bucket = () => {
     if (token && bucketId && folderId) {
       getListFileWithFolder();
     };
-  }, [folderId]);
+  }, [folderId, refreshFileWithFolder]);
+  
 
   const columns = [
     {
@@ -120,7 +120,30 @@ const Bucket = () => {
       title: 'SHARE',
       dataIndex: 'share',
       key: 'share',
-      render: (text: any, record: any) => <div>{record?.kind === 'FILE' && record?.method === 'ENCRYPT' && <div onClick={() => setInfoFile(record)} style={{ cursor: 'pointer', fontSize: '22px', color: '#a779cb', height: '26px' }}><FaShareAltSquare /></div>}</div>
+      render: (text: any, record: any) => <div>{record?.kind === 'FILE' && record?.method === 'ENCRYPT' && <div onClick={() => setInfoFileEueno(record)} style={{ cursor: 'pointer', fontSize: '22px', height: '26px' }}><FaShareAltSquare /></div>}</div>
+    },
+    {
+      title: 'DINO SERVICE',
+      dataIndex: 'service',
+      key: 'service',
+      render: (text: any, record: any) => 
+      <div>
+        {record?.kind === 'FILE' && record?.method === 'ENCRYPT' && record?.type !== 'image/svg+xml' && record?.type !== 'image/webp' && isFileImage(record?.type) && 
+          <div onClick={() => setInfoFileDINO(record)} style={{ cursor: 'pointer', fontSize: '20px', height: '24px' }}><GrServices /></div>
+        }
+      </div>
+    },
+    {
+      title: 'DELETE',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (text: any, record: any) => (
+        <div onClick={(e) => { e.stopPropagation(); }}>
+          <Popconfirm onConfirm={(e) => handleDelete(record?.kind, record?._id)} title="Are you sure?" okText="Yes" cancelText="No">
+            <div style={{ cursor: 'pointer', fontSize: '22px', color: '#e27a7a', height: '26px' }}><AiFillDelete /></div>
+          </Popconfirm>
+        </div>
+      )
     },
   ];
 
@@ -154,13 +177,15 @@ const Bucket = () => {
           ))}
         </Breadcrumb>
         <div className='dino-bucket-page'>
+          <Upload breadcrumb={breadcrumb} projectId={bucketId} folderParentId={folderId} refreshFileList={() => breadcrumb.length > 0 ? setRefreshFileWithFolder(!refreshFileWithFolder) : setRefresh(!refresh)} />
           <Table onRow={(record) => { return { onClick: () => {
             if (record?.kind === 'FOLDER') {
               setFolderId(record?._id);
             }
           } } }} dataSource={listFile} columns={columns} />
         </div>
-        <ShareFile info={infoFile} close={() => setInfoFile(undefined)} />
+        <ShareFileDINO info={infoFileDINO} close={() => setInfoFileDINO(undefined)} />
+        <ShareFileEueno info={infoFileEueno} close={() => setInfoFileEueno(undefined)} />
       </Container>
     </div>
   );

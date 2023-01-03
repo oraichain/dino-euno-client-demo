@@ -24,3 +24,96 @@
   color: rgb(141, 61, 216) !important;
   border-color: rgb(141, 61, 216) !important;
 }
+.dino-upload {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+}
+.dino-upload > div {
+  margin-left: 15px;
+}
+.dino-upload-file {
+  display: flex;
+  justify-content: center;
+}
+.dino-upload-file > div {
+  cursor: pointer;
+  width: 130px;
+  height: 130px;
+  border: 1px solid #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin: 0 auto;
+  font-size: 80px;
+}
+.dino-upload-file > div:hover {
+  background: rgb(211, 187, 235);
+}
+.ant-upload-select {
+  width: 100%;
+}
+.ant-upload-wrapper
+  .ant-upload-list
+  .ant-upload-list-item-error
+  .ant-upload-list-item-name,
+.ant-upload-wrapper
+  .ant-upload-list
+  .ant-upload-list-item-error
+  .ant-upload-icon
+  .anticon {
+  color: #333 !important;
+}
+.select-method {
+  margin-bottom: 20px;
+}
+.select-method > div {
+  font-weight: 600;
+  width: 100%;
+}
+.ant-upload-select {
+  border: 1px dashed rgb(181, 108, 230);
+  border-radius: 5px;
+  padding: 20px;
+}
+.dino-gen-key {
+  margin-top: 20px;
+}
+.dino-gen-key .gen-key-head {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 15px;
+  margin-bottom: 7px;
+}
+.dino-gen-key .gen-key-head span:last-child {
+  margin-left: 10px;
+  padding: 2px 5px;
+  background: rgb(234, 212, 255);
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.dino-upload-show {
+  padding: 4px 10px;
+  font-size: 13px;
+  background: rgb(236, 218, 255);
+  display: inline-block;
+  border-radius: 5px;
+  margin-top: 10px;
+  position: relative;
+}
+.dino-upload-show > svg {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.dino-share-result-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 15px;
+}
