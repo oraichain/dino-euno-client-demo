@@ -117,3 +117,20 @@
   font-size: 16px;
   margin-bottom: 15px;
 }
+.ant-radio-wrapper {
+  margin-bottom: 7px;
+}
+.dino-result {
+  max-height: 400px;
+  overflow-y: auto;
+}
+.dino-result::-webkit-scrollbar {
+  width: 8px;
+}
+.dino-result::-webkit-scrollbar-track {
+  background: transparent;
+}
+.dino-result::-webkit-scrollbar-thumb {
+  background: #d1d1d1;
+  border-radius: 10px;
+}

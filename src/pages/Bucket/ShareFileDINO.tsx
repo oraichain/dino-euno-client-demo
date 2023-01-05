@@ -1,8 +1,8 @@
-import { Button, Modal, notification } from "antd";
+import { Button, Modal, notification, Radio } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import useToken from "../../hooks/useToken";
 import { useAuthorization } from "../../providers/AuthorizationProvider";
-import { getFileInfoMethod, sendDataDinohub, uploadKey } from "../../services";
+import { getFileInfoMethod, getListOption, sendDataDinohub, uploadKey } from "../../services";
 import { classifyMediaType, MediaType } from "../../utils/classifyMediaType";
 import { getMasterKey } from "../../utils/contract";
 import ShareResultDINO from './ShareResultDINO';
@@ -14,8 +14,16 @@ const ShareFileDINO = ({ info, close }: {info: any, close: () => void}) => {
   const { user }: any = useAuthorization();
   const [loading, setLoading] = useState(false);
   const [fileInfo, setFileInfo]: any = useState({});
+  const [optionId, setOptionId] = useState();
+  const [listOption, setListOption] = useState([]);
   const [result, setResult]: any = useState(null);
   const [typeResult, setTypeResult] = useState(MediaType['JSON']);
+
+  const getListService = useCallback(async () => {
+    const response = await getListOption();
+    setListOption(response);
+    setOptionId(response[0]?.id);
+  }, []);
 
   const getFileInfo = useCallback(async () => {
     const { data } = await getFileInfoMethod(token, info?.project_id, info?._id);
@@ -27,6 +35,10 @@ const ShareFileDINO = ({ info, close }: {info: any, close: () => void}) => {
       getFileInfo();
     }
   }, [info, token]);
+
+  useEffect(() => {
+    getListService();
+  }, []);
 
   const handleShare = useCallback(async () => {
     if (fileInfo?.encrypt_key) {
@@ -42,13 +54,7 @@ const ShareFileDINO = ({ info, close }: {info: any, close: () => void}) => {
         user?.account,
       );
       if (res?.status === 200 && res?.encryptedData) {
-        const resData: any = await sendDataDinohub(res?.encryptedData, fileInfo?.url_torrent);
-        if (resData?.data?.status === 'error') {
-          setLoading(false);
-          close();
-          notification.success({ message: "Success" });
-          return;
-        }
+        const resData: any = await sendDataDinohub(res?.encryptedData, fileInfo?.url_torrent, optionId);
         const mediaType = classifyMediaType(resData?.headers.get("Content-Type") || '');
         setTypeResult(mediaType);
         switch (mediaType) {
@@ -66,47 +72,34 @@ const ShareFileDINO = ({ info, close }: {info: any, close: () => void}) => {
             break;
         }
         setLoading(false);
-        notification.success({ message: "Success" });
       }
     }
-  }, [fileInfo, info, token, user]);
+  }, [fileInfo, info, token, user, optionId]);
 
   return (
     <Modal 
       open={!!info}
       onCancel={() => {close(); setResult(null)}}
       centered
-      width={450}
+      width={500}
       footer={null}
+      title="DINO Service"
     >
-      {result ? (
-        <>
-          <ShareResultDINO result={result} typeResult={typeResult} />
-          <div style={{ textAlign: 'right', marginTop: '10px' }}><Button onClick={() => {close(); setResult(null)}}>Cancel</Button></div>
-        </>
-      ) : (
-        <>
-          <h3 style={{ marginTop: '0' }}>Share to public key:</h3>
-          <input 
-            style={{ 
-              width: '100%', 
-              height: '40px', 
-              fontSize: '20px', 
-              padding: '15px 15px 6px 15px', 
-              borderRadius: '5px', 
-              border: '1px solid #999', 
-              marginBottom: '30px' 
-            }} 
-            disabled 
-            placeholder="Public key" 
-            value="*****************************************" 
-          />
-          <div style={{ textAlign: 'right' }}>
-            <Button style={{ marginRight: '10px' }} onClick={() => {close(); setResult(null)}}>Cancel</Button>
-            <Button type="primary" loading={loading} onClick={handleShare}>Share</Button>
-          </div>
-        </>
+      <div style={{ marginBottom: '10px' }}><b>Please choose an AI API service from DINO AI Marketplace:</b></div>
+      <Radio.Group onChange={(e) => setOptionId(e.target.value)} value={optionId}>
+        {listOption?.map((item:any) => (
+           <Radio value={item.id}>{item.name}</Radio>
+        ))}
+      </Radio.Group>
+      <div style={{ marginTop: '15px' }}>
+        <div><b>Input:</b> {info?.file_name}</div>
+      </div>
+      {result && (
+        <ShareResultDINO result={result} typeResult={typeResult} />
       )}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+        <Button loading={loading} onClick={handleShare} style={{ width: '100px' }} type="primary">Run</Button>
+      </div>
     </Modal>
   );
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactJson from 'react-json-view';
 import { MediaType } from '../../utils/classifyMediaType';
 import './index.css';
 
@@ -10,12 +11,18 @@ const ShareResultDINO: React.FC<{
   const renderResult = {
     [MediaType.IMAGE] : () => {
       const image = new Buffer(result, "binary").toString("base64");
-      return <img style={{ width: '100%', borderRadius: '4px' }} src={'data:image/png;base64,' + image} alt="" />;
+      return <img style={{ maxWidth: '100%', borderRadius: '4px' }} src={'data:image/png;base64,' + image} alt="" />;
     },
     [MediaType.JSON] : () => {
       return (
-        <div>
-          {result}
+        <div className="dino-result">
+          <ReactJson 
+            style={{ fontSize: 13 }}
+            name={null}
+            enableClipboard={false} 
+            src={result} 
+            displayDataTypes={false}
+          />
         </div>
       )
     },
@@ -38,7 +45,7 @@ const ShareResultDINO: React.FC<{
   
   return (
     <div className="dino-share-result">
-      <div className="dino-share-result-title">Result from DINO - AI marketplace:</div>
+      <div style={{ marginBottom: '7px' }}><b>Result:</b></div>
       {renderResult[typeResult]()}
     </div>
   );

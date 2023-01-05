@@ -278,7 +278,22 @@ export const getFileInfoMethod = async (token, projectId, fileId) => {
   return data;
 };
 
-export const sendDataDinohub = async (encryptedData, torrentURL) => {
+export const getListOption = async () => {
+  const response = await fetch(
+    `https://api-forwarding.dinohub.io/forwarding/ai-services`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const data = await response.json();
+  return data;
+};
+
+export const sendDataDinohub = async (encryptedData, torrentURL, idAPI) => {
   return await fetch(`https://api-forwarding.dinohub.io/forwarding/send-data`, {
     method: "POST",
     headers: {
@@ -287,6 +302,7 @@ export const sendDataDinohub = async (encryptedData, torrentURL) => {
     body: JSON.stringify({
       encryptedData: encryptedData,
       torrenUrl: torrentURL,
+      id: idAPI,
     }),
   });
 };
