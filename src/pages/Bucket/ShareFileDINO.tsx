@@ -42,6 +42,7 @@ const ShareFileDINO = ({ info, close }: {info: any, close: () => void}) => {
 
   const handleShare = useCallback(async () => {
     if (fileInfo?.encrypt_key) {
+      setResult(null);
       setLoading(true);
       const [masterKey, iv] = await getMasterKey(fileInfo?.encrypt_key);
       const res = await uploadKey(
